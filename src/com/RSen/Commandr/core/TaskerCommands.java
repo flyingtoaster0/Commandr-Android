@@ -141,27 +141,29 @@ public class TaskerCommands {
         boolean commandExecuted = false;
         if (TaskerIntent.testStatus(context).equals(TaskerIntent.Status.OK)) {
             if (taskerCommands != null) {
-                for (final TaskerCommand cmd : taskerCommands) {
-                    String[] activationPhrases = cmd.activationName.toLowerCase().split(",");
-                    for (String activationPhrase : activationPhrases) {
-                        if (interceptedCommand.toLowerCase().trim().equals(activationPhrase.trim()) && cmd.isEnabled) {
-                            GoogleNowUtil.resetGoogleNow(context);
-                            Handler handler = new Handler(new Handler.Callback() {
-                                @Override
-                                public boolean handleMessage(Message message) {
-                                    cmd.execute(context, "");
-                                    return true;
-                                }
-                            });
-                            handler.sendEmptyMessageDelayed(0, 2000);
-                            commandExecuted = true;
+                String[] commandList = interceptedCommand.split("\\ and\\ ");
+
+                for (String cmdStr : commandList) {
+                    for (final TaskerCommand cmd : taskerCommands) {
+                        String[] activationPhrases = cmd.activationName.toLowerCase().split(",");
+                        for (String activationPhrase : activationPhrases) {
+                            if (cmdStr.toLowerCase().trim().equals(activationPhrase.trim()) && cmd.isEnabled) {
+                                GoogleNowUtil.resetGoogleNow(context);
+                                Handler handler = new Handler(new Handler.Callback() {
+                                    @Override
+                                    public boolean handleMessage(Message message) {
+                                        cmd.execute(context, "");
+                                        return true;
+                                    }
+                                });
+                                handler.sendEmptyMessageDelayed(0, 2000);
+                                commandExecuted = true;
+                            }
                         }
                     }
-
                 }
+
             }
-
-
         } else if (TaskerIntent.testStatus(context).equals(TaskerIntent.Status.NoPermission)) {
             Toast.makeText(context, context.getString(R.string.reinstall_commandr), Toast.LENGTH_LONG).show();
         }

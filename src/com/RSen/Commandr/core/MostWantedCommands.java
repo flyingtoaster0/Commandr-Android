@@ -1,6 +1,7 @@
 package com.RSen.Commandr.core;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.RSen.Commandr.builtincommands.BluetoothCommand;
 import com.RSen.Commandr.builtincommands.BluetoothOffCommand;
@@ -72,29 +73,33 @@ public class MostWantedCommands {
 
     public static boolean execute(Context context, String phrase) {
         boolean commandExecuted = false;
-        for (MostWantedCommand command : getCommands(context)) {
-            if (command.isEnabled(context)) {
-                String[] activationPhrases = command.getPhrase(context).split(",");
-                for (String activationPhrase : activationPhrases) {
-                    if (command.getPredicateHint() == null) {
-                        if (activationPhrase.toLowerCase().trim().equals(phrase.toLowerCase().trim())) {
-                            command.execute(context, "");
-                            commandExecuted = true;
-                            if (!command.isHandlingGoogleNowReset()) {
-                                GoogleNowUtil.resetGoogleNow(context);
+        String[] commandList = phrase.split("\\ and\\ ");
+
+        for (String cmdStr : commandList) {
+            for (MostWantedCommand command : getCommands(context)) {
+                if (command.isEnabled(context)) {
+                    String[] activationPhrases = command.getPhrase(context).split(",");
+                    for (String activationPhrase : activationPhrases) {
+                        if (command.getPredicateHint() == null) {
+                            if (activationPhrase.toLowerCase().trim().equals(cmdStr.toLowerCase().trim())) {
+                                command.execute(context, "");
+                                commandExecuted = true;
+                                if (!command.isHandlingGoogleNowReset()) {
+                                    //GoogleNowUtil.resetGoogleNow(context);
+                                }
                             }
-                        }
-                    } else {
-                        if (phrase.toLowerCase().trim().startsWith(activationPhrase.toLowerCase().trim())) {
-                            command.execute(context, phrase.toLowerCase().trim().substring(activationPhrase.trim().length()).trim());
-                            commandExecuted = true;
-                            if (!command.isHandlingGoogleNowReset()) {
-                                GoogleNowUtil.resetGoogleNow(context);
+                        } else {
+                            if (cmdStr.toLowerCase().trim().startsWith(activationPhrase.toLowerCase().trim())) {
+                                command.execute(context, cmdStr.toLowerCase().trim().substring(activationPhrase.trim().length()).trim());
+                                commandExecuted = true;
+                                if (!command.isHandlingGoogleNowReset()) {
+                                    GoogleNowUtil.resetGoogleNow(context);
+                                    Log.d("TEST", "TESTING");
+                                }
                             }
                         }
                     }
                 }
-
             }
         }
         return commandExecuted;
